@@ -77,8 +77,7 @@ type Step = 'idle' | 'uploading' | 'analyzing' | 'done';
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly apiBase = 'http://127.0.0.1:8000/api';
-
+  private readonly apiBase = 'https://score-resume.onrender.com/api';
   protected readonly domains = signal<DomainOption[]>([]);
   protected readonly selectedDomain = signal('auto');
   protected readonly selectedFile = signal<File | null>(null);
