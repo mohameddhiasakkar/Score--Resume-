@@ -21,6 +21,7 @@ Score Resume helps users upload their CVs, analyze resume quality, and receive u
 
 ## 🏗️ Architecture
 
+```text
 Score--Resume-
 │
 ├── frontend/              # Angular frontend
