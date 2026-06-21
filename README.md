@@ -3,7 +3,20 @@
 An intelligent **Resume Analysis Platform** built with **Angular + Django REST Framework**.
 
 Score Resume helps users upload their CVs, analyze resume quality, and receive useful feedback to improve their chances in the job market.
+## 🌐 Live Demo
 
+Frontend:
+https://score-resume-frontend.onrender.com/
+
+Backend API:
+https://score-resume.onrender.com/
+
+## 👨‍💻 Author
+
+Mohamed Dhia Sakkar
+
+GitHub:
+https://github.com/mohameddhiasakkar
 ---
 
 ## 🚀 Features
