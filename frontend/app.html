@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CV</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .upload-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h2 { color: #1a73e8; margin-bottom: 10px; }
+        p { color: #5f6368; margin-bottom: 30px; }
+        .file-input { margin-bottom: 25px; }
+        .btn-submit {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover { background-color: #1557b0; }
+    </style>
+</head>
+<body>
+    <div class="upload-card">
+        <h2>Join Our Team</h2>
+        <p>Please upload your CV (PDF, DOC, or DOCX)</p>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="file-input">
+                <input type="file" name="cv_file" accept=".pdf,.doc,.docx" required>
+            </div>
+            <button type="submit" class="btn-submit">Upload CV</button>
+        </form>
+    </div>
+</body>
+</html>

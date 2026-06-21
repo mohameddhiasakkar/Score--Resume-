@@ -1,0 +1,270 @@
+<div class="page">
+  <div class="bg-glow bg-glow--left"></div>
+  <div class="bg-glow bg-glow--right"></div>
+
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div>
+        <p class="brand-name">CV Insight</p>
+        <p class="brand-tag">AI Resume Analyzer</p>
+      </div>
+    </div>
+    <nav class="header-meta">
+      <span class="pill">14 fields supported</span>
+      <span class="pill pill--accent">All majors & domains</span>
+    </nav>
+  </header>
+
+  <main class="main">
+    @if (!analysis()) {
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Works for every major</p>
+          <h1>Turn your resume into a <span>skill intelligence report</span></h1>
+          <p class="hero-text">
+            Whether you're in engineering, medicine, law, business, design, or any other field —
+            upload your CV and get domain-specific skill analysis with tailored recommendations.
+          </p>
+          <ul class="feature-list">
+            <li>14 professional domains & auto-detection</li>
+            <li>Field-specific skill benchmarks</li>
+            <li>Cross-domain skill discovery</li>
+          </ul>
+        </div>
+
+        <div class="upload-panel">
+          <div class="domain-section">
+            <div class="domain-section-head">
+              <h3>Select your field</h3>
+              <p>Choose auto-detect or pick your major / domain</p>
+            </div>
+            <div class="domain-grid">
+              @for (domain of domains(); track domain.id) {
+                <button
+                  type="button"
+                  class="domain-chip"
+                  [class.domain-chip--active]="selectedDomain() === domain.id"
+                  (click)="selectDomain(domain.id)"
+                >
+                  <span class="domain-chip-label">{{ domain.label }}</span>
+                  <span class="domain-chip-desc">{{ domain.description }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div
+            class="dropzone"
+            [class.dropzone--active]="dragOver()"
+            [class.dropzone--filled]="selectedFile()"
+            (drop)="onDrop($event)"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+          >
+            <input
+              id="cv-file"
+              class="dropzone-input"
+              type="file"
+              accept=".pdf"
+              (change)="onFileSelected($event)"
+            />
+
+            @if (selectedFile(); as file) {
+              <div class="file-preview">
+                <div class="file-icon" aria-hidden="true">PDF</div>
+                <div>
+                  <p class="file-name">{{ file.name }}</p>
+                  <p class="file-meta">{{ formatSize(file.size) }}</p>
+                </div>
+              </div>
+            } @else {
+              <div class="dropzone-empty">
+                <div class="upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <p class="dropzone-title">Drop your resume here</p>
+                <p class="dropzone-hint">or <label for="cv-file">browse files</label> · PDF only</p>
+              </div>
+            }
+          </div>
+
+          @if (loading()) {
+            <div class="progress-steps">
+              <div class="step" [class.step--done]="step() !== 'uploading'" [class.step--active]="step() === 'uploading'">
+                <span class="step-dot"></span>
+                <span>Uploading document</span>
+              </div>
+              <div class="step" [class.step--active]="step() === 'analyzing'" [class.step--done]="step() === 'done'">
+                <span class="step-dot"></span>
+                <span>Extracting & analyzing skills</span>
+              </div>
+            </div>
+          }
+
+          <button
+            type="button"
+            class="btn btn--primary"
+            [disabled]="!selectedFile() || loading()"
+            (click)="analyzeCv()"
+          >
+            @if (loading()) {
+              <span class="spinner" aria-hidden="true"></span>
+              Analyzing resume...
+            } @else {
+              Analyze my CV
+            }
+          </button>
+
+          @if (errorMessage()) {
+            <div class="alert alert--error" role="alert">{{ errorMessage() }}</div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (analysis(); as result) {
+      <section class="dashboard">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">Analysis complete</p>
+            <h2>{{ result.filename }}</h2>
+            <div class="domain-badges">
+              <span class="domain-badge domain-badge--primary">{{ result.domain_label }}</span>
+              @if (result.auto_detected) {
+                <span class="domain-badge">Auto-detected field</span>
+              }
+            </div>
+            <p class="summary">{{ result.summary }}</p>
+          </div>
+          <button type="button" class="btn btn--ghost" (click)="reset()">Analyze another CV</button>
+        </div>
+
+        @if (result.auto_detected && result.domain_candidates.length > 1) {
+          <div class="panel panel--inline">
+            <h3>Field detection confidence</h3>
+            <div class="candidate-row">
+              @for (candidate of result.domain_candidates; track candidate.domain) {
+                <div class="candidate-card" [class.candidate-card--top]="candidate.domain === result.domain">
+                  <span class="candidate-label">{{ candidate.label }}</span>
+                  <span class="candidate-stat">{{ candidate.matches }} skills · {{ candidate.ratio }}%</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="stats-grid">
+          <article class="stat-card stat-card--hero">
+            <div class="score-ring" [style]="scoreRingStyle()">
+              <div class="score-ring-inner">
+                <span class="score-value">{{ result.score }}%</span>
+                <span class="score-label">Match score</span>
+              </div>
+            </div>
+            <div class="grade-block">
+              <span class="grade-badge">{{ result.grade }}</span>
+              <p>{{ result.found_count }} of {{ result.total_skills }} skills detected</p>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <p class="stat-label">Skills found</p>
+            <p class="stat-number stat-number--success">{{ result.found_count }}</p>
+          </article>
+
+          <article class="stat-card">
+            <p class="stat-label">Skills missing</p>
+            <p class="stat-number stat-number--warn">{{ result.missing_count }}</p>
+          </article>
+
+          <article class="stat-card">
+            <p class="stat-label">Field benchmark</p>
+            <p class="stat-number">{{ result.domain_label.split(' ')[0] }}</p>
+          </article>
+        </div>
+
+        @if (result.cross_domain_skills.length) {
+          <div class="panel panel--inline">
+            <div class="panel-head">
+              <h3>Skills found in other fields</h3>
+              <p class="panel-sub">Additional competencies detected outside your primary domain</p>
+            </div>
+            <div class="cross-domain-tags">
+              @for (skill of result.cross_domain_skills; track skill.key) {
+                <span class="cross-domain-tag">
+                  {{ skill.label }}
+                  <small>{{ skill.domain_label }}</small>
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Skill breakdown · {{ result.domain_label }}</h3>
+              <div class="legend">
+                <span><i class="dot dot--found"></i> Found</span>
+                <span><i class="dot dot--missing"></i> Missing</span>
+              </div>
+            </div>
+
+            <div class="category-list">
+              @for (group of result.categories; track group.category) {
+                <div class="category-block">
+                  <h4>{{ group.category }}</h4>
+                  <div class="skill-tags">
+                    @for (skill of group.skills; track skill.key) {
+                      <span class="skill-tag" [class.skill-tag--found]="skill.matched" [class.skill-tag--missing]="!skill.matched">
+                        {{ skill.label }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Recommendations</h3>
+              <p class="panel-sub">Prioritized actions to strengthen your CV</p>
+            </div>
+
+            <div class="recommendation-list">
+              @for (item of result.recommendations; track item.title) {
+                <article class="recommendation" [class.recommendation--high]="item.priority === 'high'">
+                  <div class="recommendation-top">
+                    <h4>{{ item.title }}</h4>
+                    <span class="priority-badge">{{ priorityLabel(item.priority) }}</span>
+                  </div>
+                  <p>{{ item.detail }}</p>
+                  @if (item.category) {
+                    <span class="rec-category">{{ item.category }}</span>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        </div>
+      </section>
+    }
+  </main>
+
+  <footer class="footer">
+    <p>CV Insight · Built for every major and domain- by mohamed dhia sakkar </p>
+  </footer>
+</div>
